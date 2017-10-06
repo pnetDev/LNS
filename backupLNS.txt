@@ -1,0 +1,56 @@
+#! /bin/bash
+## CM 171006 This script backups up essential files for LNS operation.
+## We back these up to .6 and .223
+# /etc/freeradius/users
+# /etc/freeradius/radiusd.conf
+# /etc/prol2tp/prol2tpd.con
+# /etc/freeradius/clients.conf
+# /etc/radiusclient/radiusclient.conf
+
+### FOR PPTP VPN
+# /etc/ppp/chap-secrets
+# /etc/ppp/pptpd-options
+# /etc/ppp/options.pptp
+# /etc/ppp/options
+
+## Variables
+currDATE=`date +%y%m%d%H%M`
+workingDir=/backup
+backupA=10.1.1.6
+backupB=10.1.1.223
+user=root
+pass=d0xl1nk$
+cd $workingDir
+
+## Get the files
+cp /etc/freeradius/users                $workingDir/users.$currDATE
+cp /etc/freeradius/radiusd.conf         $workingDir/freeradius/radiusd.conf.$currDATE
+cp /etc/prol2tp/prol2tpd.conf           $workingDir/prol2tpd.conf.$currDATE
+cp /etc/freeradius/clients.conf         $workingDir/clients.conf.$currDATE
+cp /etc/radiusclient/radiusclient.conf  $workingDir/radiusclient.conf.$currDATE
+cp /etc/ppp/chap-secrets                $workingDir/chap-secrets.$currDATE
+cp /etc/ppp/pptpd-options               $workingDir/pptpd-options.$currDATE
+cp /etc/ppp/options.pptp                $workingDir/options.pptp.$currDATE
+cp /etc/ppp/options                     $workingDir/options.$currDATE
+cp /var/log/freeradius/radacct/127.0.0.1/freeRadiusAccoutingLog.gz $workingDir/freeRadiusAccoutingLog.gz.$currDATE
+
+## FTP files to 10.1.1.6
+
+ftp -n $backupA <<six
+        quote USER $user
+        quote PASS $pass
+        cd /pnetBackup/LNS
+        prompt
+        mput *.$currDATE
+        bye
+six
+
+## FTP files to 10.1.1.223
+ftp -n $backupB <<three
+        quote USER $user
+        quote PASS $pass
+        cd /home/pnetadmin/pnetBackup/LNS
+        prompt
+        mput *.$currDATE
+        bye
+three

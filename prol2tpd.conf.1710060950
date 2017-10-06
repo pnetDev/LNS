@@ -1,0 +1,90 @@
+# Configuration file for prol2tp
+
+system {
+	#deny_local_tunnel_creates yes
+	listen 185.11.65.33,185.11.65.42
+	debug all
+	log_level notice
+	log_buffer {
+        	log_level debug
+	        debug all
+	        buffer_size 10000
+	        buffer_wrap yes
+	} 
+}
+
+peer profile "permanet" {
+	tunnel_profile_name "permanet"
+	ppp_profile_name "ppp_radius"
+}
+
+tunnel profile "default" {
+	# By default, no authenticated tunnels
+	auth_mode none
+	# secret "secret"
+	mtu 1500
+	debug yes
+}
+
+tunnel profile "permanet" {
+	## CM This is the tunnel profile for the BT LAC. The 
+	## Tunnel needs to be authenticated by a chap challenge
+	host_name "permanet"
+	# peer_ipaddr 193.95.131.91
+	auth_mode authenticated
+	secret "tunnelsecret123"
+	hide_avps yes 
+	## mtu 1500 changed to 1900 as requested by BT
+	mtu 1900
+	debug yes
+}
+
+session profile "default" {
+	pseudowire_type ppp
+	debug yes
+	establish_timeout 10
+}
+
+ppp profile "ppp_radius" {
+	auth_pap no
+	auth_chap yes
+	auth_mschapv1 no
+	auth_mschapv2 no
+	auth_eap no
+	auth_none no
+	initiate_lcp yes
+	dns_addr_1 8.8.8.8
+	dns_addr_2 8.8.4.4
+	mtu 1460
+	mru 1460
+	# CM Debuggin repeat CHAP challenge
+	use_radius yes
+	## CM setting the line blow solved the repeat chap challenge
+        chap_interval 120
+	# All PPP sessions share the same local IP. The peer IP (assigned to
+	# the modem) is obtained from RADIUS.
+	local_ipaddr 88.151.30.200
+	## CM Comment this out if using radius
+	## peer_ipaddr 88.151.30.201
+}
+
+
+ppp profile "default" {
+	auth_pap no
+	auth_chap yes
+	auth_mschapv1 no
+	auth_mschapv2 no
+	auth_eap no
+	auth_none no
+	initiate_lcp yes
+	dns_addr_1 8.8.8.8
+	dns_addr_2 8.8.4.4
+
+	# use_radius yes
+
+	# For initial testing, assign static addresses auth auth using
+	# pap-secrets
+	local_ipaddr 88.151.30.200
+	peer_ipaddr 88.151.30.203
+}
+
